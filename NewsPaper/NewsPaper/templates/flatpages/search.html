@@ -1,0 +1,23 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+Search
+{% endblock title %}
+
+{% block content %}
+    <h2>Search in posts</h2>
+    <h3>{{ autodata|date:'d.m.Y' }}</h3>
+    <form action="" method="get">
+        {{ filterset.form.as_p }}
+        <input type="submit" value="Найти"/>
+    </form>
+    {% for post in search %}
+     <div>
+     {{ author }}
+     {{ title }}
+     {{ autodata|date:'d.m.Y' }}
+     {{ text|truncatechars:20 }}
+     {{ post.get_field_choice_display }}
+     </div>
+    {% endfor %}
+{% endblock content %}

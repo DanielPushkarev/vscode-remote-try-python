@@ -1,0 +1,32 @@
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+Post
+{% endblock title %}
+
+{% block content %}
+   <h1>Post</h1>
+   <hr>
+   {% if news_1 %}
+       <table>
+           <tr>
+               <td>author</td>
+               <td>title</td>
+               <td>autodata</td>
+               <td>text</td>
+           </tr>
+
+           {% for post in news %}
+           <tr>
+               <td>{{ post.author }}</td>
+               <td>{{ post.title }}</td>
+               <td>{{ post.autodata }}</td>
+               <td>{{ post.text|truncatechars:20 }}</td>
+           </tr>
+           {% endfor %}
+
+       </table>
+   {% else %}
+       <h2>Nothing</h2>
+   {% endif %}
+{% endblock content %}
