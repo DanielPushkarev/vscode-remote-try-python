@@ -1,0 +1,46 @@
+{% extends 'flatpages/default.html' %}
+
+{% load censor_cust %}
+
+{% block title %}
+Post
+{% endblock title %}
+
+{% block content %}
+   <h1>article</h1>
+
+   <h3>{{ time_now|date:'d M Y' }}</h3>
+   <h3> {{ next_info|default_if_none:"Next information later" }} </h3>
+
+   <hr>
+   {% if new %}
+       <table>
+           <tr>
+               <td><h2><p style="text-align: center;">&nbsp; &nbsp; &nbsp; Catg&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </p> </h2></td>
+               <td><h2><p style="text-align: center;">&nbsp; &nbsp; &nbsp; author&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </p> </h2></td>
+               <td><h2><p style="text-align: center;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Title&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </p> </h2></td>
+               <td><h2><p style="text-align: center;">&nbsp; &nbsp; &nbsp; Data&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  </p> </h2></td>
+           </tr>
+
+            <tr>
+              <td>{{ new.title }}</td>
+              <td>{{ new.author }}</td>
+              <td>{{ new.content|censor }}</td>
+              <td>{{ new.autodata|date:'h m d M Y' }}</td>
+            </tr>
+
+       </table>
+       <hr>
+       <table>
+           <tr>
+               <td><h2><p style="text-align: center;"> Text </p></h2></td>
+           </tr>
+           <tr>
+               <td><p style="text-align: left;">{{ new.article_description|censor }}</p></td>
+           </tr>
+       </table>
+
+   {% else %}
+       <h2>Nothing!</h2>
+   {% endif %}
+{% endblock content %}

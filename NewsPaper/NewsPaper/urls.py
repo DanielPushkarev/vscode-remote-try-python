@@ -14,8 +14,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
-from .views import PostList, PostDetail, SearchList, PostCreate, PostDelete, PostUpdate
+from django.contrib import admin
+from django.urls import path, include
+from .views import PostList, PostDetail, SearchList, PostCreate, PostDelete, PostUpdate, upgrade_me, profile
 
 
 urlpatterns = [
@@ -28,4 +29,10 @@ urlpatterns = [
    path('article/create/', PostCreate.as_view()),
    path('article/<int:pk>/edit/', PostUpdate.as_view()),
    path('article/<int:pk>/delete/', PostDelete.as_view()),
+   path('admin/', admin.site.urls),
+   path('pages/', include('django.contrib.flatpages.urls')),
+   path('', include('news.urls')),
+   path('accounts/', include('allauth.urls')),
+   path('upgrade/', upgrade_me, name='upgrade'),
+   path('profile/', profile, name='profile'),
 ]
