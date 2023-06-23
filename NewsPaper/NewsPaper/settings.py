@@ -42,8 +42,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'news',
+    'appointment'
+    'appointment.apps.AppointmentConfig',
     'django.contrib.sites',
     'django.contrib.flatpages',
+    'django_apscheduler'
     'fpages',
     'django_filters',
     'simpleapp'
@@ -53,16 +56,28 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google'
 ]
 
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'danchbench'
+EMAIL_HOST_PASSWORD = '********'
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = 'danchbench@yandex.ru'
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 25
+
+ADMINS = [
+    ('daniel_pushkarev', 'daniel_pushkarev@gmail.com'),
+    ('danchbench', 'danchbench@yandex.ru'),
+    ('daniel_pushkarev', 'daniel_pushkarev@mail.ru')
+]
+SERVER_EMAIL = 'danchbench@yandex.ru'
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
-
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend'
-]
 
 ACCOUNT_FORMS = {'signup': 'simpleapp.forms.CommonSignupForm'}
 
@@ -84,7 +99,7 @@ ROOT_URLCONF = 'NewsPaper.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -97,6 +112,10 @@ TEMPLATES = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 WSGI_APPLICATION = 'NewsPaper.wsgi.application'
 

@@ -1,14 +1,18 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Post
 from .filters import PostFilter
 from .forms import PostForm
 from django.urls import reverse_lazy
+from django.views import View
 
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from .models import Appointment
+# from django.core.mail import send_mail
+from django.core.mail import mail_admins
 
 
 
@@ -135,4 +139,55 @@ def upgrade_me(request):
 def profile(request):
     context = {'is_not_author': not request.user.groups.filter(name='authors').exists()}
     return render(request, 'flatpages/User_profile.html', context)
+
+class AppointmentView(View):
+
+    def get(self, request, *args, **kwargs):
+        return render(request, 'flatpages/make_appointment.html', {})
+
+    def post(self, request, *args, **kwargs):
+        appointment = Appointment(
+            date=datetime.strptime(request.POST['date'], '%Y-%m-%d'),
+            client_name=request.POST['client_name'],
+            message=request.POST['message'],
+        )
+        appointment.save()
+
+        mail_admins(
+            subject=f'{appointment.client_name} {appointment.date.strftime("%d %m %Y")}',
+            message=appointment.message,
+        )
+
+        return redirect('/appointment/')
+
+def subscribe(request, pk):
+    user = request.user
+    category = Post.objects.get(id=pk)
+    category.subscribers.add(user)
+    message = 'You subscribed to the category: '
+    return render(request, 'flatpages/subscribe.html', {'category': category, 'message': message})
+
+def unsubscribe(request, pk):
+    user = request.user
+    category = Post.objects.get(id=pk)
+    category.subscribers.remove(user)
+    message = 'You unsubscribed from category: '
+    return render(request, 'flatpages/subscribe.html', {'category': category, 'message': message})
+
+class CategoryListView(ListView):
+    model = Post
+    template_name = 'flatpages/category_list.html'
+    context_object_name = 'category_news_list'
+
+    def get_queryset(self):
+        self.news_category = get_object_or_404(Post, id=self.kwargs['pk'])
+        queryset = Post.objects.filter(news_category=self.news_category).order_by('-sort_date_of_publication')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_subscriber'] = self.request.user not in self.news_category.subscribers.all()
+        context['is_subscriber'] = self.request.user in self.news_category.subscribers.all()
+        context['category'] = self.news_category
+        return context
 # Create your views here.
