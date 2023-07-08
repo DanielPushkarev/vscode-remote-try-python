@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="UTF-8">
+    <title>{% extends 'flatpages/default.html' %}</title>
+    {% load custom_filters %}
+    {% load custom_tags %}
+
+    {% block title %}
+    Только новости
+    {% endblock title %}
+
+    {% block content %}
+    <h1>Cоздание новости</h1>
+    <hr>
+    <form action=""method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit"
+        value="сохранить"/>
+    </form>
+<head>
+</head>
+{% endblock content %}
+<body>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+{% load custom_tags %}
+{% load cache %}
+
+{% cache 300 article %}
+{% block title %}
+Posts
+{% endblock title %}
+
+{% block content %}
+<html>
+   <h1>{{ post_detail.title|censor }}</h1>
+    <hr>
+    {% if post_detail %}
+        <table>
+            <tr>
+                <td>заголовок</td>
+                <td>дата публикации</td>
+                <td>содержание</td>
+                 <td>действия</td>
+            </tr>
+            <tr>
+                <td>______________</td>
+                <td>______________</td>
+                <td>______________</td>
+                <td>______________</td>
+            </tr>
+            <tr>
+            <td>{{ post_detail.title|censor}}</td>
+            <td>{{ post_detail.autodata|date:'d M Y'}}</td>
+            <td>{{ post_detail.text|censor}}</td>
+             <td>
+            <a href="{% url 'post_edit' post_detail.id %}"><u>Редактировать</u></a>
+            <a href="{% url 'post_delete' post_detail.id %}"><u> Удалить </u></a>
+            </td>
+        </tr>
+        </table>
+    {% else %}
+        <h2>Извините! Такой нет!</h2>
+    {% endif %}
+    {% endblock content %}
+    {% endcache %}
+<body>
+
+</body>
+</html>
