@@ -13,8 +13,23 @@ from django.contrib.auth.models import Group
 from .models import Appointment
 # from django.core.mail import send_mail
 from django.core.mail import mail_admins
+from django.views.generic import TemplateView
+from django.core.cache import cache
+from .tasks import send_email_task
 
+class PostDetail(LoginRequiredMixin,DetailView):
+    model = Post
+    template_name = 'article.html'
+    context_object_name = 'post_detail'
+    queryset = Post.objects.all()
 
+    def get_object(self, *args, **kwargs):
+        obj = cache.get(f'post-{self.kwargs["pk"]}', None)
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'post-{self.kwargs["pk"]}', obj)
+
+        return obj
 
 class PostList(ListView):
     model = Post
@@ -160,6 +175,14 @@ class AppointmentView(View):
 
         return redirect('/appointment/')
 
+class IndexView(LoginRequiredMixin, TemplateView):
+    template_name = 'protect/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_author'] = not self.request.user.groups.filter(name='authors').exists()
+        return context
+
 def subscribe(request, pk):
     user = request.user
     category = Post.objects.get(id=pk)
@@ -190,4 +213,5 @@ class CategoryListView(ListView):
         context['is_subscriber'] = self.request.user in self.news_category.subscribers.all()
         context['category'] = self.news_category
         return context
+
 # Create your views here.

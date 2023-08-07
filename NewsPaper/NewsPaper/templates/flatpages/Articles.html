@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% extends 'flatpages/default.html' %}</title>
+</head>
+
+{% load custom_filters %}
+{% load custom_tags %}
+{% load cache %}
+
+
+{% cache 60 news_all %}
+
+{% block title %}
+Post
+{% endblock title %}
+
+{% block content %}
+<body>
+<h1>Все новости ({{ post_news.count}})</h1>
+<h3>{% current_time '%d %b %Y' %}</h3>
+<h3> {{ next_sale|default_if_none:"Позже сообщим о свежих новостях!" }}</h3>
+
+<hr>
+{% if post_news %}
+    <table>
+        <thead>
+        <tr>
+            <th>Заголовок</th>
+            <th>Дата публикации</th>
+            <th>Текст</th>
+            <th>Действия</th>
+        </tr>
+        {% for post in filter.qs %}
+        <tr>
+            <td>
+            <a href="{% url 'post_detail' post.id %}">{{ post.title }}</a>
+            </td>
+            <td>
+            {{ post.autodata|date:'d M Y'}}
+            </td>
+            <td>
+            {{ post.text|censor|truncatechars:20}}
+            </td>
+            <td>
+            <a href="{% url 'post_edit' post.id %}"><u>Редактировать</u></a>
+            <a href="{% url 'post_delete' post.id %}"><u> Удалить </u></a>
+            </td>
+        </tr>
+
+        {% endfor %}
+        </thead>
+    </table>
+{% else %}
+    <h2>новостей нет!</h2>
+{% endif %}
+{% endblock content %}
+{% endcache %}
+</body>
+</html>

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+import logging
+from django.conf import settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,12 +50,14 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
     'django_apscheduler'
     'fpages',
+    'simpleapp.apps.SimpleappConfig',
     'django_filters',
     'simpleapp'
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google'
+    'allauth.socialaccount.providers.google',
+    'basic'
 ]
 
 EMAIL_HOST = 'smtp.yandex.ru'
@@ -73,6 +77,12 @@ ADMINS = [
 ]
 SERVER_EMAIL = 'danchbench@yandex.ru'
 
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
@@ -91,7 +101,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'basic.middlewares.TimezoneMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware'
 ]
 
 ROOT_URLCONF = 'NewsPaper.urls'
@@ -130,6 +145,12 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache_files'),
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -176,3 +197,98 @@ LOGIN_REDIRECT_URL = '/profile/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["console_only"],
+        },
+        "general_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "logs/general.log",
+            "maxBytes": 1048576,  # 1MB
+            "backupCount": 10,
+            "formatter": "simple",
+            "filters": ["email_file_only"],
+        },
+        "errors_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "logs/errors.log",
+            "maxBytes": 1048576,  # 1MB
+            "backupCount": 10,
+            "formatter": "verbose",
+            "filters": ["email_file_only"],
+        },
+        "security_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": "logs/security.log",
+            "maxBytes": 1048576,  # 1MB
+            "backupCount": 10,
+            "formatter": "verbose",
+            "filters": ["email_file_only"],
+        },
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "include_html": True,
+            "filters": ["email_file_only"],
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "general_file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["errors_file", "mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.server": {
+            "handlers": ["errors_file", "mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.template": {
+            "handlers": ["errors_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["errors_file"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.security": {
+            "handlers": ["security_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+    "filters": {
+        "console_only": {
+            "()": "django.utils.log.CallbackFilter",
+            "callback": lambda record: settings.DEBUG,
+        },
+        "email_file_only": {
+            "()": "django.utils.log.CallbackFilter",
+            "callback": lambda record: not settings.DEBUG,
+        },
+    },
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+        },
+        "simple": {
+            "format": "%(asctime)s %(levelname)s [%(module)s] %(message)s",
+        },
+    },
+}

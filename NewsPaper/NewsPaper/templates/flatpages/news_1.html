@@ -1,0 +1,103 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+
+{% load custom_censor %}
+
+{% load custom_extras %}
+
+{% block title %}
+NewsPortal
+{% endblock title %}
+
+{% block content %}
+   <h1>ВСЕ НОВОСТИ НА СЕГОДНЯ</h1>
+   <h3> {{ next_sale|default_if_none:"Свежие новости" }} </h3>
+   <h3>{{ time_now|date:'d M Y' }}</h3>
+
+   <tr>
+      <h2>Число статей: {{ news|length  }} </h2>
+   </tr>
+
+   <form action="" method="get">
+       {{ filterset.form.as_p }}
+       <input type="submit" value="Найти" />
+   </form>
+   <hr>
+
+   {% if news %}
+       <table>
+           <tr>
+               <td><h3><p style="text-align: center;">Название статьи&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+               </p></h3></td>
+               <td><h3><p style="text-align: center;">Автор&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+               </p></h3></td>
+               <td><h3><p style="text-align: center;"> Текст статьи&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </p></h3></td>
+               <td><h3><p style="text-align: center;"> Категория статьи&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </p></h3></td>
+               <td><h3><p style="text-align: center;"> Дата публикации</p></h3></td>
+           </tr>
+
+            {% for new in news %}
+
+            <tr>
+                {% load cache %}
+                {% cache 30 article_title %}
+              <td>{{ new.article_title|censor }}</td>
+                {% endcache %}
+                {% load cache %}
+                {% cache 30 article_author %}
+              <td>{{ new.article_author }}</td>
+                {% endcache %}
+                {% load cache %}
+                {% cache 30 article_description %}
+              <td>{{ new.article_description|truncatechars:20|censor }}</td>
+                {% endcache %}
+              <td>
+                  {% load cache %}
+                  {% cache 30 category %}
+                  {% for category in new.news_category.all %}
+                        <a href="{% url 'category_list' category.id %}"
+                           title="ссылка на категорию" target="_blank">{{ category }}</a>
+                  {% endfor %}
+                  {% endcache %}
+              </td>
+              <td>{{ new.sort_date_of_publication|date:'h m d M Y' }}</td>
+
+            </tr>
+            {% endfor %}
+
+       </table>
+
+   {% else %}
+       <h2>Статей нет!</h2>
+   {% endif %}
+
+
+   {% if page_obj.has_previous %}
+       <a href="?page=1">1</a>
+
+       {% if page_obj.previous_page_number != 1 %}
+
+           ...
+
+           <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {# Информация о текущей странице #}
+   {{ page_obj.number }}
+
+   {# Информация о следующих страницах #}
+   {% if page_obj.has_next %}
+
+       <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+        номер следующей страницы;-->
+       {% if paginator.num_pages != page_obj.next_page_number %}
+
+           ...
+
+           <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+
+       {% endif %}
+   {% endif %}
+
+{% endblock content %}
